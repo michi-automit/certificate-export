@@ -4,14 +4,11 @@ FROM python:3.9
 # Set the working directory
 WORKDIR /app
 
-# Copy the Python script to the image
-COPY script.py .
-
 # Install the required libraries
-RUN pip install kubernetes prometheus_client
+RUN pip install kubernetes prometheus_client cryptography
 
 # Set the environment variable for Prometheus
-ENV prometheus_multiproc_dir /tmp/metrics
+ENV prometheus_multiproc_dir /tmp/
 
 # Start the Python script
 CMD ["python", "script.py"]
