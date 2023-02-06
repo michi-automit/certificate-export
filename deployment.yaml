@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: certificate-export
-        image: docker.io/kamleitermichael/certificate-export:latest
+        image: docker.io/kamleitermichael/certificate-export:v0.9
         command: ["python3", "/app/script.py"]
         volumeMounts:
         - name: script-volume
@@ -26,6 +26,10 @@ spec:
         env:
         - name: prometheus_multiproc_dir
           value: /tmp/
+        resources:
+          limits:
+            memory: 1Gi
+            cpu: "500m"
       volumes:
       - name: script-volume
         configMap:
