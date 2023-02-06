@@ -98,6 +98,10 @@ data:
       remaining_valid_days = prometheus_client.Gauge(
           'remaining_valid_days', 'Remaining Valid Days for Kubernetes Secrets of Type "kubernetes.io/tls"', ['secret_name', 'secret_index', 'kubernetes_namespace'])
 
+      remaining_valid_days_errors = prometheus_client.Gauge(
+          'remaining_valid_days_errors', 'Errorcount', ['secret_name']
+      )
+
       # Function to Retrieve and Update Prometheus Metrics
       def update_metrics():
 
@@ -116,21 +120,25 @@ data:
                   certificates = certs.split("-----END CERTIFICATE-----")
                   certificates = [c + "-----END CERTIFICATE-----" for c in certificates if len(c) > 1]
                   for crt in certificates:
-                      cert = x509.load_pem_x509_certificate(crt.encode(), default_backend())
-                      valid_from = cert.not_valid_before
-                      valid_to = cert.not_valid_after
-                      today = datetime.now()
+                      try:
+                          cert = x509.load_pem_x509_certificate(crt.encode(), default_backend())
+                          valid_from = cert.not_valid_before
+                          valid_to = cert.not_valid_after
+                          today = datetime.now()
 
-                      print("Secret_Index: " + str(secret_index))
+                          print("Secret_Index: " + str(secret_index))
+                          
+                          remaining_time = valid_to - today
+                          remaining_days = remaining_time.days
+                          print(remaining_days)
+                          print(f"Das Zertifikat ist gültig von {valid_from} bis {valid_to}. " + namespace, secret_name)
 
-                      remaining_time = valid_to - today
-                      remaining_days = remaining_time.days
-                      print(remaining_days)
-                      print(f"Das Zertifikat ist gültig von {valid_from} bis {valid_to}. " + namespace, secret_name)
-
-                      remaining_valid_days.labels(secret_name, secret_index, namespace).set(remaining_days)
-                      
-                      secret_index +=1
+                          remaining_valid_days.labels(secret_name, secret_index, namespace).set(remaining_days)
+                          
+                          secret_index +=1
+                      except Exception as e:
+                          print("Fehler beim auslesen vom Secret " + secret_name)
+                          remaining_valid_days_errors.labels(secret_name).inc()
 
 
       if __name__ == '__main__':
