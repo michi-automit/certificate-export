@@ -1,0 +1,6 @@
+image: docker.io/kamleitermichael/certificate-export:v0.9
+resources:
+  limits:
+    memory: 1Gi
+    cpu: 500m
+namespace: default

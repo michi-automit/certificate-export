@@ -1,0 +1,4 @@
+name: certificate-exporter
+description: Export kubernetes.io/tls certificate remaining_days
+version: 1.0
+appVersion: 1.0

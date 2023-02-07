@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: certificate-export
+  labels:
+    app: certificate-export
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: certificate-export
+  template:
+    metadata:
+      labels:
+        app: certificate-export
+    spec:
+      containers:
+      - name: certificate-export
+        image: {{ .Values.image }}
+        command: ["python3", "/app/script.py"]
+        volumeMounts:
+        - name: script-volume
+          mountPath: /app
+        ports:
+        - containerPort: 8000
+        env:
+        - name: prometheus_multiproc_dir
+          value: /tmp/
+        resources:
+          limits:
+            memory: {{ .Values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+      volumes:
+      - name: script-volume
+        configMap:
+          name: certificate-exporter-script
